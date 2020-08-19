@@ -31,33 +31,22 @@ type Video struct {
 	IsRecommend        int
 }
 
-// VideoData struct
-type VideoData struct {
-	Id            int
-	Title         string
-	SubTitle      string
-	AddTime       int64
-	Img           string
-	Img1          string
-	EpisodesCount int
-	IsEnd         int
-	Comment       int
-}
-
-//Episodes 结构
-type Episodes struct {
+//VideoEpisodes 结构
+type VideoEpisodes struct {
 	Id            int
 	Title         string
 	AddTime       int64
 	Num           int
+	VideoId       int
 	PlayUrl       string
+	Status        int
 	Comment       int
 	AliyunVideoId string
 }
 
 // 初始化函数
 func init() {
-	orm.RegisterModel(new(Video))
+	orm.RegisterModel(new(Video),  new(VideoEpisodes))
 }
 
 // GetChannelHotList 获得频道热门列表
@@ -70,7 +59,7 @@ func GetChannelHotList(channelId int) (int64, []Video, error) {
 	qs.Filter("channel_id", channelId)
 	qs.OrderBy("-episodes_update_time")
 	qs.Limit(9)
-	num, err := qs.All(&videos, "id", "title", "sub_title", "add_time", "img", "img1", "episodes_count", "is_end","Comment")
+	num, err := qs.All(&videos, "id", "title", "sub_title", "add_time", "img", "img1", "episodes_count", "is_end", "Comment")
 	return num, videos, err
 }
 
@@ -240,20 +229,20 @@ func RedisGetVideoInfo(videoId int) (Video, error) {
 }
 
 // GetVideoEpisodesList get video episodes list by video id
-func GetVideoEpisodesList(videoId int) (int64, []Episodes, error) {
+func GetVideoEpisodesList(videoId int) (int64, []VideoEpisodes, error) {
 	o := orm.NewOrm()
-	var episodes []Episodes
+	var episodes []VideoEpisodes
 	qs := o.QueryTable("video_episodes")
 	qs = qs.Filter("video_id", videoId)
-	qs = qs.OrderBy("-num")
+	qs = qs.OrderBy("num")
 	num, err := qs.All(&episodes, "id", "title", "add_time", "num", "play_url", "comment")
 	return num, episodes, err
 }
 
 // 增加redis缓存 - 获取视频剧集列表
-func RedisGetVideoEpisodesList(videoId int) (int64, []Episodes, error) {
+func RedisGetVideoEpisodesList(videoId int) (int64, []VideoEpisodes, error) {
 	var (
-		episodes []Episodes
+		episodes []VideoEpisodes
 		num      int64
 		err      error
 	)
@@ -267,7 +256,7 @@ func RedisGetVideoEpisodesList(videoId int) (int64, []Episodes, error) {
 		num, err = redis.Int64(conn.Do("llen", redisKey))
 		if err == nil {
 			values, _ := redis.Values(conn.Do("lrange", redisKey, "0", "-1"))
-			var episodesInfo Episodes
+			var episodesInfo VideoEpisodes
 			for _, v := range values {
 				if err = json.Unmarshal(v.([]byte), &episodesInfo); err == nil {
 					episodes = append(episodes, episodesInfo)
@@ -293,22 +282,36 @@ func RedisGetVideoEpisodesList(videoId int) (int64, []Episodes, error) {
 	return num, episodes, err
 }
 
-// GetChannelTop get channel top by channel_id
-func GetChannelTop(channelId int) (int64, []VideoData, error) {
+// GetChannelTop 获得频道排行榜
+func GetChannelTop(channelId int) (int64, []orm.Params, error) {
 	o := orm.NewOrm()
-	var videos []VideoData
+	var videos []orm.Params
 	qs := o.QueryTable("video")
 	qs = qs.Filter("status", 1)
 	qs = qs.Filter("channel_id", channelId)
 	qs = qs.OrderBy("-comment")
 	qs = qs.Limit(10)
-	num, err := qs.All(&videos, "id", "title", "sub_title", "img", "img1", "add_time", "episodes_count", "is_end")
+	num, err := qs.Values(&videos, "id", "title", "sub_title", "img", "img1", "add_time", "episodes_count", "is_end")
 	return num, videos, err
 }
 
-func RedisGetChannelTop(channelId int) (int64, []VideoData, error) {
+// GetTypeTop 获得类型排行榜
+func GetTypeTop(typeId int) (int64, []orm.Params, error) {
+	o := orm.NewOrm()
+	var videos []orm.Params
+	qs := o.QueryTable("video")
+	qs = qs.Filter("status", 1)
+	qs = qs.Filter("type_id", typeId)
+	qs = qs.OrderBy("-comment")
+	qs = qs.Limit(10)
+	num, err := qs.Values(&videos, "id", "title", "sub_title", "img", "img1", "add_time", "episodes_count", "is_end")
+	return num, videos, err
+}
+
+
+func RedisGetChannelTop(channelId int) (int64, []Video, error) {
 	var (
-		videos []VideoData
+		videos []Video
 		num    int64
 	)
 	conn := redisClient.PoolConnect()
@@ -326,7 +329,7 @@ func RedisGetChannelTop(channelId int) (int64, []VideoData, error) {
 				videoId, err := strconv.Atoi(string(v.([]byte)))
 				videoInfo, err := RedisGetVideoInfo(videoId)
 				if err == nil {
-					var videoDataInfo VideoData
+					var videoDataInfo Video
 					videoDataInfo.Id = videoInfo.Id
 					videoDataInfo.Img = videoInfo.Img
 					videoDataInfo.Img1 = videoInfo.Img1
@@ -360,15 +363,15 @@ func RedisGetChannelTop(channelId int) (int64, []VideoData, error) {
 	return num, videos, err
 }
 
-func SaveVideo(title string, subTitle string, channelId int, regionId int, typeId int, playUrl string, user_id int, aliyunVideoId string) error {
+// SaveVideo 保存视频
+func SaveVideo(title string, subTitle string,img string,img1 string,channelId int,regionId int, typeId int,userId int,time int64) (int64, error) {
 	var video Video
 	o := orm.NewOrm()
-	time := time.Now().Unix()
 	video.Title = title
 	video.SubTitle = subTitle
 	video.AddTime = time
-	video.Img = ""
-	video.Img1 = ""
+	video.Img = img
+	video.Img1 = img1
 	video.EpisodesCount = 1
 	video.IsEnd = 1
 	video.ChannelId = channelId
@@ -377,26 +380,38 @@ func SaveVideo(title string, subTitle string, channelId int, regionId int, typeI
 	video.TypeId = typeId
 	video.EpisodesUpdateTime = time
 	video.Comment = 0
-	video.UserId = user_id
-	videoId, err := o.Insert(&video)
-	if err == nil {
-		if aliyunVideoId != "" {
-			playUrl = ""
-		}
-		_, err = o.Raw("INSERT INTO video_episodes (title,add_time,num,video_id,play_url,statusmcomment,aliyun_video_id) VALUES (?,?,?,?,?,?,?,?)",
-			subTitle,time,1,videoId,playUrl,1,0,aliyunVideoId).Exec()
+	video.UserId = userId
+	return o.Insert(&video)
+}
+
+// SaveVideoEpisodes 保存视频剧集
+func SaveVideoEpisodes(videoId int, title string, playUrl string,  time int64,aliyunVideoId string) error {
+	o := orm.NewOrm()
+	if aliyunVideoId != "" {
+		playUrl = ""
 	}
+	var videoEpisodes VideoEpisodes
+	videoEpisodes.Title = title
+	videoEpisodes.AddTime = time
+	videoEpisodes.Num = 1
+	videoEpisodes.VideoId = videoId
+	videoEpisodes.PlayUrl = playUrl
+	videoEpisodes.Status = 1
+	videoEpisodes.Comment = 0
+	videoEpisodes.AliyunVideoId = aliyunVideoId
+	_, err := o.Insert(&videoEpisodes)
 	return err
 }
-// SaveAliyunVideo save aliyun video
+
+// SaveAliyunVideo 保存阿里云视频
 func SaveAliyunVideo(videoId string, log string) error {
 	o := orm.NewOrm()
-	_, err := o.Raw("INSERT INTO aliyun_video (video_id, log, add_time) VALUES (?,?,?)",videoId,log, time.Now().Unix()).Exec()
+	_, err := o.Raw("INSERT INTO aliyun_video (video_id, log, add_time) VALUES (?,?,?)", videoId, log, time.Now().Unix()).Exec()
 	fmt.Println(err)
 	return err
 }
 
-// GetAllList get all video list
+// GetAllList 获得使其列表
 func GetAllList() (int64, []Video, error) {
 	o := orm.NewOrm()
 	var videos []Video

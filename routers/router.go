@@ -89,6 +89,8 @@ func init() {
 			beego.NSRouter("/search", &controllers.VideoController{}, "get:Search"),
 			// 搜索
 			beego.NSRouter("/test_data", &controllers.VideoController{}, "get:TestData"),
+			// 搜索
+			beego.NSRouter("/update_es", &controllers.VideoController{}, "get:SendEs"),
 
 
 			// 频道
