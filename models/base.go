@@ -15,21 +15,14 @@ type Type struct {
 func GetChannelRegion(channelId int) (int64, []Region, error) {
 	o := orm.NewOrm()
 	var regions []Region
-	qs := o.QueryTable("channel_region")
-	qs = qs.Filter("status", 1)
-	qs = qs.Filter("channel_id", channelId)
-	qs = qs.OrderBy("-sort")
-	num, err := qs.All(&regions, "id", "name")
+	num,err := o.Raw("SELECT `id`,`name` FROM `channel_region` WHERE `status` = 1 AND `channel_id` = ? ORDER BY `sort` desc ",channelId).QueryRows(&regions)
 	return num, regions, err
 }
 
 func GetChannelType(channelId int) (int64, []Type, error) {
 	o := orm.NewOrm()
 	var types []Type
-	qs := o.QueryTable("channel_type")
-	qs = qs.Filter("status", 1)
-	qs = qs.Filter("channel_id", channelId)
-	qs = qs.OrderBy("-sort")
-	num, err := qs.All(&types, "id", "name")
+	num,err := o.Raw("SELECT `id`,`name` FROM `channel_type` WHERE `status` = 1 AND `channel_id` = ? ORDER BY `sort` desc ",channelId).QueryRows(&types)
 	return num, types, err
+
 }
