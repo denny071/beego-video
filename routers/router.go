@@ -33,6 +33,7 @@ func init() {
 			// 用户视频
 			beego.NSRouter("/video", &controllers.UserController{}, "get:Video"),
 		),
+
 		// 消息模块
 		beego.NSNamespace("/message",
 			// 发送消息
@@ -41,9 +42,11 @@ func init() {
 		),
 
 		// 阿里云模块
-		beego.NSNamespace("/aliyun",
+		beego.NSNamespace("/aliyun/video",
 			// 上传视频
-			beego.NSRouter("/video", &controllers.AliyunController{}, "post:UploadVideo"),
+			beego.NSRouter("/upload", &controllers.AliyunController{}, "post:Upload"),
+			// 上传视频
+			beego.NSRouter("/refresh", &controllers.AliyunController{}, "get:Refresh"),
 			// 播放授权
 			beego.NSRouter("/auth", &controllers.AliyunController{}, "get:PlayAuth"),
 			// 回调地址
@@ -91,8 +94,6 @@ func init() {
 			beego.NSRouter("/test_data", &controllers.VideoController{}, "get:TestData"),
 			// 搜索
 			beego.NSRouter("/update_es", &controllers.VideoController{}, "get:SendEs"),
-
-
 			// 频道
 			beego.NSNamespace("/channel",
 				// 推荐
@@ -106,10 +107,6 @@ func init() {
 				),
 			),
 		),
-
-
-
-
 	)
 	beego.AddNamespace(ns)
 

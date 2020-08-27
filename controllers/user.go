@@ -84,6 +84,17 @@ func (c *UserController) LoginDo() {
 
 
 func (c *UserController) Video(){
-	c.Data["json"] = SuccessJsonStruct{Msg: "video"}
-	c.ServeJSON()
+	uid,_ := c.GetInt("uid")
+	if uid == 0 {
+		c.Data["json"] = ReturnError(4001,"必须指定用户")
+		c.ServeJSON()
+	}
+	num,videos,err := models.GetUserVideo(uid)
+	if err == nil {
+		c.Data["json"] = ReturnSuccess(0,"success",videos,num)
+		c.ServeJSON()
+	} else {
+		c.Data["json"] = ReturnError(4004,"没有相关内容")
+		c.ServeJSON()
+	}
 }

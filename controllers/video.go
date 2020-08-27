@@ -274,19 +274,19 @@ func (c *VideoController) Search() {
 
 
 //生成测试视频数据
-func (c *VideoController) TestData() {
-	//var i = 1
-	//for {
-	//	i++
-	//	rand.Seed(time.Now().UnixNano())
-	//	uidi := rand.Intn(10)
-	//	uid := uidi + 10
-	//	models.SaveVideo(strconv.Itoa(i)+"鸣人柯南一护路飞由诺阿斯塔"+strconv.Itoa(i), "蜡笔小新樱桃小丸子", 1, 2, 2, "/static/video/coverr-sparks-of-bonfire-1573980240958.mp4", uid, "")
-	//	i++
-	//	c.Data["json"] = SuccessJsonStruct{Msg: " create Test data，title："+"鸣人柯南一护路飞由诺阿斯塔"+strconv.Itoa(i)}
-	//	c.ServeJSON()
-	//}
-}
+//func (c *VideoController) TestData() {
+//	//var i = 1
+//	//for {
+//	//	i++
+//	//	rand.Seed(time.Now().UnixNano())
+//	//	uidi := rand.Intn(10)
+//	//	uid := uidi + 10
+//	//	models.SaveVideo(strconv.Itoa(i)+"鸣人柯南一护路飞由诺阿斯塔"+strconv.Itoa(i), "蜡笔小新樱桃小丸子", 1, 2, 2, "/static/video/coverr-sparks-of-bonfire-1573980240958.mp4", uid, "")
+//	//	i++
+//	//	c.Data["json"] = SuccessJsonStruct{Msg: " create Test data，title："+"鸣人柯南一护路飞由诺阿斯塔"+strconv.Itoa(i)}
+//	//	c.ServeJSON()
+//	//}
+//}
 
 //导入ES脚本
 func (c *VideoController) SendEs() {
