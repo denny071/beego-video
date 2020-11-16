@@ -8,7 +8,7 @@ package routers
 
 import (
 	"fmt"
-	"fyoukuApi/controllers"
+	"beego-video/controllers"
 	"github.com/astaxie/beego/context"
 
 	"github.com/astaxie/beego"

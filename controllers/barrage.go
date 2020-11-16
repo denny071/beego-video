@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
-	"fyoukuApi/models"
+	"beego-video/models"
 	"github.com/astaxie/beego"
 	"github.com/gorilla/websocket"
 	"net/http"

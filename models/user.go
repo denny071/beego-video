@@ -1,7 +1,7 @@
 package models
 
 import (
-	redisClient "fyoukuApi/services/redis"
+	redisClient "beego-video/services/redis"
 	"strconv"
 	"time"
 

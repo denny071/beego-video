@@ -3,8 +3,8 @@ package models
 import (
 	"encoding/json"
 	"fmt"
-	"fyoukuApi/services/es"
-	redisClient "fyoukuApi/services/redis"
+	"beego-video/services/es"
+	redisClient "beego-video/services/redis"
 	"github.com/astaxie/beego/orm"
 	"github.com/garyburd/redigo/redis"
 	"strconv"

@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "fyoukuApi/routers"
+	_ "beego-video/routers"
 	"github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego"
 	_ "github.com/go-sql-driver/mysql"

@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"fyoukuApi/models"
+	"beego-video/models"
 	"regexp"
 
 	"github.com/astaxie/beego"

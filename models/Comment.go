@@ -2,7 +2,7 @@ package models
 
 import (
 	"encoding/json"
-	mq "fyoukuApi/services/mp"
+	mq "beego-video/services/mp"
 	"github.com/astaxie/beego/orm"
 	"time"
 )
